@@ -13,7 +13,8 @@
   "dependencies": {
     "react": "16.9.0",
     "react-native": "0.61.5",
-    "react-native-callkeep": "^3.0.10"
+    "react-native-callkeep": "^3.0.10",
+    "uuid": "^7.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.6.2",
