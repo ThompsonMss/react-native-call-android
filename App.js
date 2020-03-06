@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, PermissionsAndroid, TouchableHighlight } from 'react-native';
+import { View, Text, StyleSheet, PermissionsAndroid, TouchableHighlight, Alert } from 'react-native';
 import { v4 } from 'uuid';
 import RNCallKeep from 'react-native-callkeep';
 
@@ -30,21 +30,48 @@ export default function App() {
   }
 
   RNCallKeep.setup(options).then(accepted => {
-    console.log('Aceito: ', accepted);
     RNCallKeep.setAvailable(true);
   });
 
-  const optionsDefaultNumber = {
-    alertTitle: 'Default not set',
-    alertDescription: 'Please set the default phone account'
-  };
+  useEffect(async () => {
+    const status = await RNCallKeep.hasPhoneAccount();
+    if (!status) {
+      const optionsDefaultNumber = {
+        alertTitle: 'Padrão não definido.',
+        alertDescription: 'Defina a conta de telefone padrão.'
+      };
 
-  RNCallKeep.hasDefaultPhoneAccount(optionsDefaultNumber);
+      RNCallKeep.hasDefaultPhoneAccount(optionsDefaultNumber);
+    }
+  }, []);
+
+  RNCallKeep.addEventListener('answerCall', ({ callUUID }) => {
+    console.log('Usuário Atendeu a Chamada: ', callUUID);
+    RNCallKeep.setCurrentCallActive(callUUID);
+  });
+
+  RNCallKeep.addEventListener('endCall', ({ callUUID }) => {
+    console.log('Usuário Encerrou a Chamada');
+  });
+
+  RNCallKeep.addEventListener('didDisplayIncomingCall', ({ error, callUUID, handle, localizedCallerName, hasVideo, fromPushKit }) => {
+    // você pode fazer as seguintes ações ao receber este evento: 
+    // - iniciar a reprodução de toque se for uma chamada efetuada 
+    console.log('Realizando chamda');
+  });
+
+  RNCallKeep.addEventListener('didReceiveStartCallAction', ({ handle, callUUID, name }) => {
+    console.log('Esse fera aqui mesmo');
+  });
+
+  RNCallKeep.addEventListener('didPerformDTMFAction', ({ digits, callUUID }) => {
+    console.log('Digito: ', digits);
+  });
 
   function display() {
     const uuid = create_UUID();
     try {
-      RNCallKeep.displayIncomingCall(uuid, '993133465', 'Thompson Silva');
+      RNCallKeep.displayIncomingCall(uuid, 'DEDICADO PRÓPRIO', 'Thompson Silva');
       RNCallKeep.answerIncomingCall(uuid)
     } catch (error) {
       console.log('Error: ', error);
@@ -53,19 +80,17 @@ export default function App() {
 
   function chamar() {
     const uuid = create_UUID();
-    RNCallKeep.startCall(uuid, '85236985', 'Teste Teste');
+    RNCallKeep.startCall(uuid, '+5561993133465', 'Teste Teste');
   }
 
-  function verificar() {
+  function connectionService() {
     const status = RNCallKeep.supportConnectionService();
-    console.log('Preparado: ', status);
-    alert('Preparado: ', status);
+    Alert.alert('Connection Service disponível: ', status ? 'Sim' : 'Não');
   }
 
-  async function temNumero() {
+  async function contaTelefone() {
     const status = await RNCallKeep.hasPhoneAccount();
-    console.log('Numero: ', status);
-    alert('Tem número: ', status ? 'Tem' : 'Não');
+    Alert.alert('Conta Telefone configurada: ', status ? 'Sim' : 'Não');
   }
 
   return (
@@ -80,12 +105,12 @@ export default function App() {
         <Text style={styles.textButton}>Realizar Chamada</Text>
       </TouchableHighlight>
 
-      <TouchableHighlight onPress={() => verificar()} style={[styles.button, { backgroundColor: '#a99' }]}>
+      <TouchableHighlight onPress={() => connectionService()} style={[styles.button, { backgroundColor: '#a99' }]}>
         <Text style={styles.textButton}>Connection Service</Text>
       </TouchableHighlight>
 
-      <TouchableHighlight onPress={() => temNumero()} style={[styles.button, { backgroundColor: '#c45d00' }]}>
-        <Text style={styles.textButton}>Tem Número</Text>
+      <TouchableHighlight onPress={() => contaTelefone()} style={[styles.button, { backgroundColor: '#c45d00' }]}>
+        <Text style={styles.textButton}>Conta Telefone</Text>
       </TouchableHighlight>
     </View>
   );

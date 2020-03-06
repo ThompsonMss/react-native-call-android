@@ -8,7 +8,7 @@
     "start": "react-native start",
     "test": "jest",
     "lint": "eslint .",
-    "codebase-reset": "git reset --hard f5b0bb3"
+    "debug": "adb logcat *:S RNCallKeepModule:V"
   },
   "dependencies": {
     "react": "16.9.0",
